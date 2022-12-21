@@ -1,8 +1,11 @@
 // import PropTypes from 'prop-types';
 import _ from './Form.module.css';
 import { useForm } from 'react-hook-form';
+import { useState } from 'react';
 
 export const Form = () => {
+  const [isPending, setIsPending] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -11,6 +14,7 @@ export const Form = () => {
 
   const onSubmit = (data) => {
     console.log(data);
+    setIsPending(true);
   };
 
   return (
@@ -32,6 +36,7 @@ export const Form = () => {
           id='email'
           type='text'
           aria-invalid={!!errors.email}
+          disabled={isPending}
         />
         {errors.email &&
           <p className={_.error}>{errors.email.message}</p>
@@ -46,18 +51,28 @@ export const Form = () => {
               value: true,
               message: 'Provide a password'
             },
-            pattern: {
-              value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^\w\s]).{6,}/,
-              message: `Pass isn't strong enough!`,
-            }
+            minLength: {
+              message: 'Password too short!',
+              value: 6,
+            },
+            validate: {
+              needLowerCased: v => /[a-z]+/.test(v) ||
+                'Add some lowercased chars!',
+              needCaps: v => /[A-Z]+/.test(v) ||
+                'Add a few caps chars!!',
+              needDigits: v => /[\d]+/.test(v) ||
+                'Now put some digits!',
+              needNonChars: v => /[^\w\s]+/.test(v) ||
+                'Where are non-characters?!',
+            },
           })}
           className={_.input}
           id='password'
           type='password'
+          disabled={isPending}
           aria-invalid={!!errors.password} />
         {errors.password &&
-          <p className={_.error}>{errors.password.message}</p>
-        }
+          <p className={_.error}>{errors.password.message}</p> }
       </div>
 
       <div className={_.wrapCheckbox}>
@@ -65,12 +80,16 @@ export const Form = () => {
           {...register('save')}
           className={_.checkbox}
           id='save'
+          disabled={isPending}
           type='checkbox' />
         <label htmlFor='save' className={_.labelCheckbox}>
           Keep password
         </label>
       </div>
-      <button className={_.submit} type='submit'>Enter</button>
+      <button className={_.submit} type='submit'
+        disabled={isPending}>Enter</button>
+      {isPending && <p>Please wait for server response...</p>}
+
     </form>
   );
 };
